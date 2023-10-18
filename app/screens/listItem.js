@@ -1,4 +1,4 @@
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View,Image } from 'react-native'
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View,Image, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,58 +8,54 @@ import { colors } from '../globalConstant/colors';
 
 const ListItem = () => {
   const [selectedService ,setSelectedService] = useState(1)
+  const [purchaseServiceList,setPurchaseServiceList] = useState([]);
+  const [additionalserviceList,setAdditionServiceList] = useState([]);
+  const [purchaseServiceTotalPrice,setPurchaseServiceTotalPrice] = useState('');
+  const [additionserviceTotalPrice,setAdditionserviceTotalPrice] = useState('');
    const purchaseService = 1;
    const additionservice = 2;
-   
 
-  const data1 = [
-    {
-      serviceId:1,
-      price:3500,
-      purchaseService:true
-    },
-    {
-      serviceId:2,
-      price:3500,
-      purchaseService:false
-    },
-    {
-      serviceId:3,
-      price:3500,
-      purchaseService:false
-    },
-    {
-      serviceId:4,
-      price:3500,
-      purchaseService:true
-    },
-    {
-      serviceId:5,
-      price:3500,
-      purchaseService:true
-    },
-    {
-      serviceId:6,
-      price:3500,
-      purchaseService:false
-    },
-    {
-      serviceId:7,
-      price:3500,
-      purchaseService:true
-    },
-    {
-      serviceId:8,
-      price:3500,
-      purchaseService:true
-    },
-    {
-      serviceId:9,
-      price:3500,
-      purchaseService:true
-    }
-  ]
-
+   useEffect(()=>{
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://fir-dynamiclinks-e43dd.web.app/practical-api.json'); 
+        const result = await response.json();
+        const allService = result?.data?.purchased_services;
+        const purchasedServices = [];
+        const additionalServices = [];
+        allService.forEach(mainService => {
+          mainService.purchased_office_template.purchased_office_services.forEach(subService => {
+            if (subService.service_selected !== null) {
+              purchasedServices.push(subService);
+            } else {
+              additionalServices.push(subService);
+            }
+          });
+        });
+        const totalpurchasePrice = purchasedServices.reduce((acc, item) => {
+          const itemPrice = parseFloat(item.price);
+          if (!isNaN(itemPrice)) {
+            return acc + itemPrice;
+          }
+          return acc;
+        }, 0);
+        const totaladditionolPrice = additionalServices.reduce((acc, item) => {
+          const itemPrice = parseFloat(item.price);
+          if (!isNaN(itemPrice)) {
+            return acc + itemPrice;
+          }
+          return acc;
+        }, 0);
+        setPurchaseServiceList(purchasedServices);
+        setPurchaseServiceTotalPrice(totalpurchasePrice)
+        setAdditionServiceList(additionalServices)
+        setAdditionserviceTotalPrice(totaladditionolPrice)
+      } catch (error) {
+        Alert.alert("error to fecth data",error)
+      }
+    };
+    fetchData();
+   },[])
 
   return (
     <>
@@ -78,22 +74,25 @@ const ListItem = () => {
 
     <ScrollView style={{paddingTop:10}}>
       <View style={{paddingHorizontal:20}}> 
-      <FlatList 
-        data={selectedService==1?data1.filter((item)=>item?.purchaseService== true):data1.filter((item)=>item?.purchaseService== false)}
+       <FlatList 
+       nestedScrollEnabled
+        data={selectedService == 1? purchaseServiceList : additionalserviceList}
         showsVerticalScrollIndicator={false}
         renderItem={ServiceListItem}
       />
+      
       </View>
       <View style={{backgroundColor:colors.black,padding:20,marginTop:10}}>
         <FlatList 
-          data={selectedService==1?data1.filter((item)=>item?.purchaseService== true):data1.filter((item)=>item?.purchaseService== false)}
+        nestedScrollEnabled
+          data={selectedService == 1? purchaseServiceList : additionalserviceList}
           ItemSeparatorComponent={<View style={{height:10}} />}
           renderItem={PriceList}
           ListFooterComponent={<View style={{marginVertical:50,borderBottomWidth:1,borderColor:colors.gray}} />}
         />
         <View style={{flexDirection:"row",justifyContent:"space-between",paddingBottom:40}}>
-            <Text style={{color:colors.white}}>Total Costings</Text>
-            <Text style={{color:colors.white}}>5000</Text>
+            <Text style={{color:colors.lightBrown}}>Total Costings</Text>
+            <Text style={{color:colors.lightBrown}}>{selectedService == 1? purchaseServiceTotalPrice : additionserviceTotalPrice}</Text>
         </View>
       </View>
     </ScrollView>
@@ -105,7 +104,7 @@ export default ListItem
 
 const styles = StyleSheet.create({
   btn:{
-    flex:1,alignItems:"center",justifyContent:"center",paddingVertical:10,borderBottomColor:"gray",borderBottomWidth:1
+    flex:1,alignItems:"center",justifyContent:"center",paddingVertical:10,borderBottomColor:colors.gray,borderBottomWidth:1
   },
   selectedTxt:{
     fontWeight:'700',

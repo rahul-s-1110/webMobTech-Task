@@ -1,30 +1,22 @@
 import { StyleSheet, Text, View,Image } from "react-native";
 import React from "react";
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from "../globalConstant/colors";
 
 const ServiceListItem = ({item,index}) => {
   return (
     <View>
-      <Text>Main Service {item?.serviceId} :</Text>
+      <Text>Main Service {item?.id} :</Text>
       <View
-        style={{
-          marginVertical: 10,
-          padding: 15,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderWidth: 0.7,
-          borderRadius: 10,
-          borderColor: "gray",
-        }}
+        style={styles.container}
       >
         <View style={{ flexDirection: "row" }}>
           <Image
             style={{ width: 80, height: 60, borderRadius: 10 }}
-            source={{ uri: "https://picsum.photos/200" }}
+            source={{ uri: item?.image }}
           />
           <View style={{ marginLeft: 10, justifyContent: "space-around" }}>
-            <Text>SErvice {item?.serviceId}</Text>
+            <Text>Service {item?.id}</Text>
             <Text>Kr {item?.price}</Text>
           </View>
         </View>
@@ -36,4 +28,15 @@ const ServiceListItem = ({item,index}) => {
 
 export default ServiceListItem;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    container:{
+        marginVertical: 10,
+        padding: 15,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        borderWidth: 0.7,
+        borderRadius: 10,
+        borderColor: colors.gray,
+    }
+});
